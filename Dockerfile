@@ -14,7 +14,7 @@ COPY app/ ./app/
 COPY tests/ ./tests/
 COPY inference.py openenv.yaml ./
 
-EXPOSE 8000
+EXPOSE 7860
 
 # Run uvicorn as the main foreground process (PID 1, exec form)
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "7860"]
