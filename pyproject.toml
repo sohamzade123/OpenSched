@@ -20,6 +20,9 @@ dependencies = [
   "pytest"
 ]
 
+[project.scripts]
+server = "app.main:app"
+
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["app*"]
