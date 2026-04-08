@@ -2,6 +2,7 @@
 
 name: OpenSched
 version: "0.1.0"
+multi_mode: true
 authors:
   - OpenSched Team
 
@@ -10,6 +11,19 @@ description: >
   on calendar scheduling and meeting conflict resolution.
   Agents must schedule, reschedule, or reject incoming meeting requests
   while minimizing conflicts and respecting priority constraints.
+
+# ---------------------------------------------------------------------------
+# Build
+# ---------------------------------------------------------------------------
+
+build:
+  config: pyproject.toml
+  backend: setuptools.build_meta
+  python: ">=3.10"
+
+deployment:
+  mode: multi
+  package: pyproject.toml
 
 # ---------------------------------------------------------------------------
 # Environment
