@@ -19,9 +19,13 @@ dependencies = [
   "httpx>=0.27.0",
   "pytest>=8.0.0",
   "openai>=1.30.0",
-  "requests>=2.31.0"
+  "requests>=2.31.0",
+  "openenv>=0.2.0"
 ]
+
+[project.scripts]
+server = "server.app:app"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["app*"]
+include = ["app*", "server*"]
