@@ -1,3 +1,11 @@
+---
+title: OpenSched
+colorFrom: blue
+colorTo: purple
+sdk: docker
+app_port: 7860 
+---
+
 # OpenSched
 
 **An OpenEnv-style benchmark for evaluating AI agents on calendar scheduling and conflict resolution.**
