@@ -1,0 +1,129 @@
+# openenv.yaml — OpenSched benchmark specification
+
+name: OpenSched
+version: "0.1.0"
+authors:
+  - OpenSched Team
+
+description: >
+  A deterministic benchmark environment for evaluating AI agents
+  on calendar scheduling and meeting conflict resolution.
+  Agents must schedule, reschedule, or reject incoming meeting requests
+  while minimizing conflicts and respecting priority constraints.
+
+# ---------------------------------------------------------------------------
+# Environment
+# ---------------------------------------------------------------------------
+
+environment:
+  module: app.env
+  class: SchedulingEnv
+  interface: reset / step
+  time_format: "HH:MM (same-day only)"
+  deterministic: true
+
+observation:
+  type: SchedulerObservation
+  fields:
+    - calendar: "list[Meeting] — currently scheduled meetings"
+    - incoming_request: "MeetingRequest — the request to resolve"
+    - conflicts: "int — pairwise overlap count"
+    - steps_taken: "int — steps used this episode"
+    - message: "str — human-readable status"
+
+actions:
+  type: SchedulerAction
+  allowed_types:
+    - schedule_new_meeting
+    - reschedule_existing_meeting
+    - reject_request
+    - suggest_alternative_slot
+    - finalize_schedule
+
+# ---------------------------------------------------------------------------
+# Tasks
+# ---------------------------------------------------------------------------
+
+tasks:
+  - id: easy-conflict
+    difficulty: easy
+    description: High-priority request overlaps a low-priority meeting.
+    max_steps: 5
+    expected: Reschedule blocker, schedule at preferred time.
+
+  - id: medium-reschedule
+    difficulty: medium
+    description: Conflict solvable by moving one meeting to a free slot.
+    max_steps: 10
+    expected: Reschedule Design Review to 11:00, schedule Strategic Planning at 10:00.
+
+  - id: hard-chain-reaction
+    difficulty: hard
+    description: Tight schedule requiring multiple meetings to be shuffled.
+    max_steps: 15
+    expected: Relocate Standup and Client Focus, fit 120min Workshop at 09:00.
+
+# ---------------------------------------------------------------------------
+# Evaluation
+# ---------------------------------------------------------------------------
+
+evaluation:
+  grader_module: app.graders
+  grader_function: grade_episode
+  reward_module: app.rewards
+  reward_function: compute_reward
+  outcome_scoring:
+    method: 3-criteria normalized score (0.0 to 1.0)
+    criteria:
+      - request_scheduled: Was the incoming request placed on the calendar?
+      - zero_conflicts: Is the final calendar conflict-free?
+      - preferred_time: Was the request placed at its preferred time?
+  metrics:
+    - total_steps
+    - total_reward
+    - scheduled
+    - rescheduled
+    - rejected
+    - success_rate
+    - final_conflicts
+    - outcome_score
+
+# ---------------------------------------------------------------------------
+# API
+# ---------------------------------------------------------------------------
+
+api:
+  framework: FastAPI
+  base_url: http://localhost:8000
+  endpoints:
+    - method: GET
+      path: /health
+      description: Health check
+    - method: GET
+      path: /tasks
+      description: List benchmark tasks
+    - method: GET
+      path: /tasks/{id}
+      description: Task details
+    - method: POST
+      path: /run/{id}
+      description: Auto-run task with built-in resolver
+    - method: POST
+      path: /reset
+      description: Reset environment for interactive session
+    - method: POST
+      path: /step
+      description: Submit one agent action
+    - method: GET
+      path: /state
+      description: Current environment state
+
+# ---------------------------------------------------------------------------
+# Agent
+# ---------------------------------------------------------------------------
+
+agent:
+  entry_point: inference.py
+  resolver_module: app.scheduler
+  resolver_function: resolve
+  type: deterministic baseline (multi-step reschedule + schedule)
